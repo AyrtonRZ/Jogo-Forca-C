@@ -492,7 +492,8 @@ void creditos(){
 	system("cls");
 	printf("\n\n\n\n\n\n\n\n\n\n");
 	printf("\n\t\t\t\t\t\tDESENVOLVEDORES: ");
-	printf("\n\t\t\t\t\t\tAyrton m. Rodrigues.");
+	printf("\n\t\t\t\t\t\tAyrton M. Rodrigues.");
 	printf("\n\t\t\t\t\t\tJose Vieira Stable.\n\n\n\n");
+	printf("\n\n\n\n\n\n\n\n\n\n\n");
 	system("pause");
 }
