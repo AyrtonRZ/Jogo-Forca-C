@@ -2,11 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>//BIBLIOTECA BOOLEANA
-#include <time.h>//BIBLIOTECA PARA USAR FUN«√O ALEATORIA
-#include <ctype.h>
-
-//------------------------VARIAVEIS GLOBAIS -----------------
-unsigned int sortPalavra;
+#include <time.h>//BIBLIOTECA PARA USAR O TEMPO COMO FUN√á√ÉO ALEATORIA
+#include <ctype.h>//
 
 //------------------------ ESTRUTURAS GLOBAIS ---------------
 typedef struct registroPalavras{//STRUCT GLOBAL ARMAZENAMENTO DE PALVRAS E ID
@@ -18,8 +15,10 @@ typedef struct estrutDicas{//STRUCT GLOBAL ARMAZENAR DICA
 	char dica[100];
 }dica;
 
+//------------------------VARIAVEIS GLOBAIS -----------------
+unsigned int sortPalavra;
 	
-// -----------------------CHAMANDO AS FUN«’ES --------------------------
+// -----------------------CHAMANDO AS FUN√á√ïES --------------------------
 FILE* acessarArquivo(char nome[],char modo[]);
 FILE* fecharArquivo(FILE *arquivo);
 void addPalavra();
@@ -42,175 +41,8 @@ int main(){
 	return 0;
 }
 
-//------------------FUN«’ES-------------------
-
-//FUN«√O PARA ACESSAR O ARQUIVO
-FILE* acessarArquivo(char nome[], char modo[]){
-	FILE *arquivo;
-	arquivo= fopen(nome,modo);
-	if(arquivo==NULL){//VERIFICA«√O DE ERRO
-		printf("/nERROOO !!\nArquivo nao foi ABERTO!\n");	
-	}
-	return arquivo;
-}
-
-//FUN«√O PARA FECHAR O ARQUIVO
-FILE* fecharArquivo(FILE *arquivo){
-	if(arquivo==NULL){//VERIFICA«√O DE ERRO
-		printf("/nERROOO !!\nArquivo nao foi FECHADO!\n");	
-	}
-	fclose(arquivo);
-	return arquivo;
-}
-
-//FUN«√O PARA ADDICIONAR A PALAVRA
-void addPalavra(){
-	char resposta;
-	bool erro;
-	FILE *temp;
-	//---chamando estruturas---
-	registro recolhe; 
-	temporarios temporario;
-	dica guarda,registroTemp;
-	
-	do{//loop para para confirmar a palavra e armazenala
-		system("cls");
-		printf("\nDIGITE UMA PALAVRA: ");
-		fflush(stdin);
-		scanf("%99[^\n]",recolhe.palavra);
-		printf("DIGITE A DICA: ");
-		fflush(stdin);
-		scanf("%99[^\n]",guarda.dica);
-		printf("\nDESEJA USAR ESSA PALAVRA ? <S/N>");
-		fflush(stdin);
-		resposta=getchar();
-	}while(resposta!='S' && resposta!='s');
-	
-	strupr(recolhe.palavra);//passar os caracteres das strings para maiusculas
-	strupr(guarda.dica);
-	temp=acessarArquivo("dicas.fc","r");//abrir o arquivo dica.fc
-	erro=true;
-	recolhe.idDica=0;//declaraÁao valor idDica
-	
-	while(!feof(temp)){//Checar se a dicas È existente no arquivo
-		fread(&registroTemp,sizeof(registroTemp),1,temp);
-		if(strcmp(guarda.dica,registroTemp.dica)==0){//comparaÁ„o das duas strings
-			erro=false;
-			break;
-		}
-		recolhe.idDica++;//add +1 no id da Dica
-	}
-	temp=fecharArquivo(temp);
-	
-	if(erro==true){//VERIFICA ERRO DE DICA N√O EXISTENTE
-		printf("\nERROO!... DICA NAO EXISTENTE");
-		printf("\nAPERTE ENTER PARA VOLTAR AO MENU.\n");
-		fflush(stdin);
-		resposta=getchar();
-		return;
-	}
-	temp=acessarArquivo("palavras.fc","r");//VERIFICAR ERRO SE PALAVRA JA EXISTE
-	erro=false;
-	while(!feof(temp)){//enquanto !n„o chegar no final do arquivo
-		fread(&temporario,sizeof(temporario),1,temp);//ler arquivo
-		if(strcmp(recolhe.palavra,temporario.palavra)==0){//comparando as palavras
-			erro=true;
-			break;
-		}
-	}
-	if(erro==true){
-		printf("\nERROO!... ESSA PALAVRA JA EXISTE!");
-		printf("\nAPERTE ENTER PARA VOLTAR AO MENU.\n");
-		fflush(stdin);
-		resposta=getchar();
-		return;
-	}	
-	temp=fecharArquivo(temp);
-	
-	temp=acessarArquivo("palavras.fc","a");//ARQUIVO ADD PALAVRA
-	if(fwrite(&recolhe,sizeof(recolhe),1,temp)!=1){//adiciona a palavra e verifica erro caso add mais de uma roda o if
-		printf("\nNAO FOI POSSIVEL ADICIONAR PALAVRA");
-		printf("\nAPERTE ENTER PARA VOLTAR AO MENU.\n");
-		fflush(stdin);
-		resposta=getchar();
-		return;	
-	}
-	temp=fecharArquivo(temp);//fecha arquivo 
-	voltarMenu();//direciona para funÁao do menu
-}
-
-//FUN«√O PARA RECOLHER A DICA DO USUARIO
-void addDica(){
-	dica recolhe, temp;
-	char resposta;
-	bool erro=false;
-	do{//loop para armazenar dica e confirmar resposta 
-		system("cls");
-		printf("\nDIGITE UMA DICA:");
-		fflush(stdin);
-		scanf("%s[^\n]",&recolhe.dica);
-		printf("\nDESEJA USAR ESSA DICA ? <S/N>");
-		fflush(stdin);
-		resposta=getchar();
-	}while(resposta!='S' && resposta!='s');
-	//verificaÁ„o se tem alguma palavra igual
-	FILE *arquivo;
-	strupr(recolhe.dica);//pega a dica e transforma os caracteres em maiusculas
-	arquivo=acessarArquivo("dicas.fc","r");//abre arquivo dicas.fc em modo leitura
-	while(!feof(arquivo)){//loop verificar se dica È existente
-		fread(&temp,sizeof(temp),1,arquivo);//ler os dados do arquivo
-		if(strcmp(recolhe.dica,temp.dica)==0){//verificando se as dica ja È existente
-			printf("\nERROO!... ESSA DICA JA EXISTE!");
-			erro=true;
-			break;
-		}
-	}
-	arquivo=fecharArquivo(arquivo);
-	if(erro==false){//verifica se palavras forem diferentes add em acessarArquivo
-		arquivo=acessarArquivo("dicas.fc","a");//abir arquivo dicas.fc modo adicinar
-		fwrite(&recolhe,sizeof(recolhe),1,arquivo);// add dados no arquivo dicas.fc
-		arquivo=fecharArquivo(arquivo);
-	}
-	voltarMenu();
-}
-
-//FUN«√O PARA SORTEIO DAS PALAVRAS
-void sorteioPalavra(){
-	srand(time(NULL));
-	unsigned int quantidadePalavras=0;//variavel para contar a quantidade de palavras do arquivo
-	FILE *arquivo;
-	registro temp;
-	arquivo=acessarArquivo("palavras.fc","r");
-	while(!feof(arquivo)){//ler quantidade de palvras e add +1 conforme o laÁo percorre cada uma
-		fread(&temp,sizeof(temp),1,arquivo);//ler dados 
-		quantidadePalavras++;
-	}
-	quantidadePalavras-=1;
-	arquivo=fecharArquivo(arquivo);
-	sortPalavra=rand()%quantidadePalavras;//sorteia palavra 
-}
-
-//FUN«√O INICIALIZAR OS ARQUIVOS NO CORPO DO PROJETO
-void init(){
-	FILE *temp;
-	
-	//INICIALIZANDO ARQUIVO DICA.FC
-	temp=acessarArquivo("dicas.fc","a");
-	temp=fecharArquivo(temp);
-	
-	//INICIALIZANDO ARQUIVO PALAVRAS.FC
-	temp=acessarArquivo("palavras.fc","a");
-	temp=fecharArquivo(temp);
-}
-
-//FUN«√O PARA VOLTAR AO MENU
-void voltarMenu(){
-	printf("\n\t\t\tAPERTE ENTER PARA VOLTAR AO MENU.\n");
-	fflush(stdin);
-	getchar();
-}
-
-//FUN«√O DO MENU
+//------------------FUN√á√ïES-------------------
+//FUN√á√ÉO MENU
 void menu(){
 	char escolha;
 	do{
@@ -261,10 +93,167 @@ void menu(){
 	}while(escolha!='5'); 	
 }
 
-//FUN«√O PARA INICIAR JOGO
+//FUN√á√ÉO PARA ACESSAR O ARQUIVO
+FILE* acessarArquivo(char nome[], char modo[]){
+	FILE *arquivo;
+	arquivo= fopen(nome,modo);
+	if(arquivo==NULL){//VERIFICA√á√ÉO DE ERRO
+		printf("/nERROOO !!\nArquivo nao foi ABERTO!\n");	
+	}
+	return arquivo;
+}
+
+//FUN√á√ÉO PARA FECHAR O ARQUIVO
+FILE* fecharArquivo(FILE *arquivo){
+	if(arquivo==NULL){//VERIFICA√á√ÉO DE ERRO
+		printf("/nERROOO !!\nArquivo nao foi FECHADO!\n");	
+	}
+	fclose(arquivo);
+	return arquivo;
+}
+
+//FUN√á√ÉO INICIALIZAR OS ARQUIVOS NO CORPO DO PROJETO
+void init(){
+	FILE *temp;
+	
+	//INICIALIZANDO ARQUIVO DICA.FC
+	temp=acessarArquivo("dicas.fc","a");
+	temp=fecharArquivo(temp);
+	
+	//INICIALIZANDO ARQUIVO PALAVRAS.FC
+	temp=acessarArquivo("palavras.fc","a");
+	temp=fecharArquivo(temp);
+}
+
+//FUN√á√ÉO PARA VOLTAR AO MENU
+void voltarMenu(){
+	printf("\n\t\t\tAPERTE ENTER PARA VOLTAR AO MENU.\n");
+	fflush(stdin);
+	getchar();
+}
+
+//FUN√á√ÉO PARA RECOLHER A DICA DO USUARIO
+void addDica(){
+	
+	dica recolhe, temp;
+	char resposta;
+	bool erro=false;
+	
+	do{//loop para armazenar dica e confirmar resposta 
+		system("cls");
+		printf("\nDIGITE UMA DICA:");
+		fflush(stdin);
+		scanf("%s[^\n]",&recolhe.dica);
+		printf("\nDESEJA USAR ESSA DICA ? <S/N>");
+		fflush(stdin);
+		resposta=getchar();
+	}while(resposta!='S' && resposta!='s');
+	//verifica√ß√£o se tem alguma palavra igual
+	FILE *arquivo;
+	strupr(recolhe.dica);//pega a dica e transforma os caracteres em maiusculas
+	
+	arquivo=acessarArquivo("dicas.fc","r");//abre arquivo dicas.fc em modo leitura
+	while(!feof(arquivo)){//abre o arquivo e verifica o indicador de fim de arquivo
+		fread(&temp,sizeof(temp),1,arquivo);//ler os dados do arquivo
+		if(strcmp(recolhe.dica,temp.dica)==0){//verificando se as dica ja √© existente
+			printf("\nERROO!... ESSA DICA JA EXISTE!");
+			erro=true;
+			break;
+		}
+	}
+	arquivo=fecharArquivo(arquivo);
+	
+	if(erro==false){//verifica se palavras forem diferentes add em acessarArquivo
+		arquivo=acessarArquivo("dicas.fc","a");//abir arquivo dicas.fc modo adicinar
+		fwrite(&recolhe,sizeof(recolhe),1,arquivo);// add dados no arquivo dicas.fc(dados,tamanho,1,arquivo)
+		arquivo=fecharArquivo(arquivo);
+	}
+	voltarMenu();
+}
+
+//FUN√á√ÉO PARA ADDICIONAR A PALAVRA
+void addPalavra(){
+	char resposta;
+	bool erro;
+	FILE *temp;
+	//---chamando estruturas---
+	registro recolhe; 
+	temporarios temporario;
+	dica guarda,registroTemp;
+	
+	do{//loop para para confirmar a palavra e armazenala
+		system("cls");
+		printf("\nDIGITE UMA PALAVRA: ");
+		fflush(stdin);
+		scanf("%99[^\n]",recolhe.palavra);
+		printf("DIGITE A DICA: ");
+		fflush(stdin);
+		scanf("%99[^\n]",guarda.dica);
+		printf("\nDESEJA USAR ESSA PALAVRA ? <S/N>");
+		fflush(stdin);
+		resposta=getchar();
+	}while(resposta!='S' && resposta!='s');
+	
+	strupr(recolhe.palavra);//passar os caracteres das strings para maiusculas
+	strupr(guarda.dica);
+	temp=acessarArquivo("dicas.fc","r");//abrir o arquivo dica.fc
+	erro=true;
+	recolhe.idDica=0;//declara√ßao valor idDica
+	
+	//checar se a dica ja √© existente no arquivo 
+	while(!feof(temp)){//abre o arquivo e verifica o indicador de fim de arquivo
+		fread(&registroTemp,sizeof(registroTemp),1,temp);//ler todos os tipos de dados do arquivo(dados,tamanho,1,arquivo) 
+		if(strcmp(guarda.dica,registroTemp.dica)==0){//compara√ß√£o das duas strings
+			erro=false;
+			break;
+		}
+		recolhe.idDica++;//add +1 no id da Dica
+	}
+	temp=fecharArquivo(temp);
+	if(erro==true){//VERIFICA ERRO DE DICA N√ÉO EXISTENTE
+		printf("\nERROO!... DICA NAO EXISTENTE");
+		printf("\nAPERTE ENTER PARA VOLTAR AO MENU.\n");
+		fflush(stdin);
+		resposta=getchar();
+		return;
+	}
+	
+	temp=acessarArquivo("palavras.fc","r");//VERIFICAR ERRO SE PALAVRA JA EXISTE
+	erro=false;
+	while(!feof(temp)){//enquanto !n√£o chegar no final do arquivo
+		fread(&temporario,sizeof(temporario),1,temp);//ler arquivo
+		if(strcmp(recolhe.palavra,temporario.palavra)==0){//comparando as palavras
+			erro=true;
+			break;
+		}
+	}
+	if(erro==true){
+		printf("\nERROO!... ESSA PALAVRA JA EXISTE!");
+		printf("\nAPERTE ENTER PARA VOLTAR AO MENU.\n");
+		fflush(stdin);
+		resposta=getchar();
+		return;
+	}	
+	temp=fecharArquivo(temp);
+	
+	temp=acessarArquivo("palavras.fc","a");//ARQUIVO ADD PALAVRA
+	if(fwrite(&recolhe,sizeof(recolhe),1,temp)!=1){//adiciona a palavra e verifica, caso add mais de uma mostra erro
+		printf("\nNAO FOI POSSIVEL ADICIONAR PALAVRA");
+		printf("\nAPERTE ENTER PARA VOLTAR AO MENU.\n");
+		fflush(stdin);
+		resposta=getchar();
+		return;	
+	}
+	temp=fecharArquivo(temp);//fecha arquivo 
+	voltarMenu();//direciona para fun√ßao do menu
+}
+
+//FUN√á√ÉO PARA INICIAR JOGO
 void iniciarJogo(){
+	
 	registro recolhe;
 	dica guarda;
+	
 	char esconde[100];
 	char palavraEdit[100];
 	char letra;
@@ -275,11 +264,14 @@ void iniciarJogo(){
 	int tamanho=0;
 	bool fim=false;
 	bool result;
+	
 	FILE *arquivo;
+	
 	sorteioPalavra(); 
+
 	arquivo=acessarArquivo("palavras.fc","r");
-	fseek(arquivo,sizeof(recolhe)*sortPalavra,SEEK_SET);//ler a palavra sorteada da variavel global sortPalavra
-	fread(&recolhe,sizeof(recolhe),1,arquivo);
+	fseek(arquivo,sizeof(recolhe)*sortPalavra,SEEK_SET);//reposiciona o indicador de fluxo no inicio do arquivo
+	fread(&recolhe,sizeof(recolhe),1,arquivo);//ler os dados da struct
 	arquivo=fecharArquivo(arquivo);
 	
 	arquivo=acessarArquivo("dicas.fc","r");
@@ -288,24 +280,25 @@ void iniciarJogo(){
 	arquivo=fecharArquivo(arquivo);
 	
 	for(i=0;i<strlen(recolhe.palavra);i++){
-		if(recolhe.palavra[i]=='¡' || recolhe.palavra[i]=='¬' || recolhe.palavra[i]=='√'){
+		if(recolhe.palavra[i]=='√Å' || recolhe.palavra[i]=='√Ç' || recolhe.palavra[i]=='√É'){
 			palavraEdit[i]='A';
 		}
-		else if(recolhe.palavra[i]=='¡' || recolhe.palavra[i]==' '){
+		else if(recolhe.palavra[i]=='√Å' || recolhe.palavra[i]=='√ä'){
 			palavraEdit[i]='E';
 		}
-		else if(recolhe.palavra[i]=='Õ' || recolhe.palavra[i]=='Œ'){
+		else if(recolhe.palavra[i]=='√ç' || recolhe.palavra[i]=='√é'){
 			palavraEdit[i]='I';
 		}
-		else if(recolhe.palavra[i]=='”' || recolhe.palavra[i]=='‘' || recolhe.palavra[i]=='’'){
+		else if(recolhe.palavra[i]=='√ì' || recolhe.palavra[i]=='√î' || recolhe.palavra[i]=='√ï'){
 			palavraEdit[i]='O';
 		}
-			else if(recolhe.palavra[i]=='⁄' || recolhe.palavra[i]=='€'){
+			else if(recolhe.palavra[i]=='√ö' || recolhe.palavra[i]=='√õ'){
 			palavraEdit[i]='U';
 		}else{
 			palavraEdit[i]=recolhe.palavra[i];
 		}
 	}
+	
 	for(i=0;i<strlen(recolhe.palavra);i++){
 		if(recolhe.palavra[i]==' '){
 			esconde[i]=' ';
@@ -320,6 +313,7 @@ void iniciarJogo(){
 		}
 	}
 	esconde[i]='\0';
+	
 	j=0;
 	while(fim==false){
 		system("cls");
@@ -349,7 +343,7 @@ void iniciarJogo(){
 			fim=true;
 			result=false;
 		}
-		else if(strcmp(recolhe.palavra,esconde)==0){
+		else if(strcmp(recolhe.palavra,esconde)==0){//comparando as variaveis
 			result=true;
 			fim=true;	
 		}
@@ -357,7 +351,23 @@ void iniciarJogo(){
 	resultado(recolhe.palavra,result);
 }
 
-//FUN«√O PARA VERIFICAR A LETRA
+//FUN√á√ÉO PARA SORTEIO DAS PALAVRAS
+void sorteioPalavra(){
+	srand(time(NULL));
+	unsigned int quantidadePalavras=0;//variavel para contar a quantidade de palavras do arquivo
+	FILE *arquivo;
+	registro temp;
+	arquivo=acessarArquivo("palavras.fc","r");
+	while(!feof(arquivo)){//ler quantidade de palvras e add +1 conforme o la√ßo percorre cada uma
+		fread(&temp,sizeof(temp),1,arquivo);//ler dados 
+		quantidadePalavras++;
+	}
+	quantidadePalavras-=1;
+	arquivo=fecharArquivo(arquivo);
+	sortPalavra=rand()%quantidadePalavras;//sorteia palavra 
+}
+
+//FUN√á√ÉO PARA VERIFICAR A LETRA
 bool verificaLetra(char letra,char palavraEdit[100], char *esconde, char palavra[100]){
 	bool erro=true;
 	int i;
@@ -370,7 +380,111 @@ bool verificaLetra(char letra,char palavraEdit[100], char *esconde, char palavra
 	return erro;
 }
 
-//FUN«√O ANALIZAR RESULTADOS
+//FUN√á√ÉO DESENHO DO BONECO
+void mostraBoneco(int membros){
+	switch(membros){
+		case 1:
+			printf("\n\t√õ√ü√ü√ü√ü√ü√ü√ü√ü√ü√ü   ");
+			printf("\n\t√õ         |   ");
+			printf("\n\t√õ        ***  ");
+			printf("\n\t√õ       *   * ");
+			printf("\n\t√õ        ***  ");
+			printf("\n\t√õ             ");
+			printf("\n\t√õ             ");
+			printf("\n\t√õ             ");
+			printf("\n\t√õ             ");
+			printf("\n\t√õ             ");
+			printf("\n\t√õ");
+			printf("\n\t√õ");
+			break;
+		case 2:
+			printf("\n\t√õ√ü√ü√ü√ü√ü√ü√ü√ü√ü√ü   ");
+			printf("\n\t√õ         |   ");
+			printf("\n\t√õ        ***  ");
+			printf("\n\t√õ       *   * ");
+			printf("\n\t√õ        ***  ");
+			printf("\n\t√õ         |   ");
+			printf("\n\t√õ         |   ");
+			printf("\n\t√õ         |   ");
+			printf("\n\t√õ             ");
+			printf("\n\t√õ             ");
+			printf("\n\t√õ");
+			printf("\n\t√õ");
+			break;
+		case 3:
+			printf("\n\t√õ√ü√ü√ü√ü√ü√ü√ü√ü√ü√ü   ");
+			printf("\n\t√õ         |   ");
+			printf("\n\t√õ        ***  ");
+			printf("\n\t√õ       *   * ");
+			printf("\n\t√õ        ***  ");
+			printf("\n\t√õ        /|   ");
+			printf("\n\t√õ       / |   ");
+			printf("\n\t√õ         |   ");
+			printf("\n\t√õ             ");
+			printf("\n\t√õ             ");
+			printf("\n\t√õ");
+			printf("\n\t√õ");
+			break;
+		case 4:
+			printf("\n\t√õ√ü√ü√ü√ü√ü√ü√ü√ü√ü√ü  ");
+			printf("\n\t√õ         |     ");
+			printf("\n\t√õ        ***    ");
+			printf("\n\t√õ       *   *   ");
+			printf("\n\t√õ        ***    ");
+			printf("\n\t√õ        /|\\  ");
+			printf("\n\t√õ       / | \\ ");
+			printf("\n\t√õ         |     ");
+			printf("\n\t√õ               ");
+			printf("\n\t√õ               ");
+			printf("\n\t√õ               ");
+			printf("\n\t√õ               ");
+			break;
+		case 5:
+			printf("\n\t√õ√ü√ü√ü√ü√ü√ü√ü√ü√ü√ü ");
+			printf("\n\t√õ         |      ");
+			printf("\n\t√õ        ***     ");
+			printf("\n\t√õ       *   *    ");
+			printf("\n\t√õ        ***     ");
+			printf("\n\t√õ        /|\\    ");
+			printf("\n\t√õ       / | \\   ");
+			printf("\n\t√õ         |      ");
+			printf("\n\t√õ        /       ");
+			printf("\n\t√õ       /        ");
+			printf("\n\t√õ                ");
+			printf("\n\t√õ                ");
+			break;
+		case 6:
+			printf("\n\t√õ√ü√ü√ü√ü√ü√ü√ü√ü√ü√ü   ");
+			printf("\n\t√õ         |      ");
+			printf("\n\t√õ        ***     ");
+			printf("\n\t√õ       *   *    ");
+			printf("\n\t√õ        ***     ");
+			printf("\n\t√õ        /|\\     ");
+			printf("\n\t√õ       / | \\   ");
+			printf("\n\t√õ         |      ");
+			printf("\n\t√õ        / \\     ");
+			printf("\n\t√õ       /   \\    ");
+			printf("\n\t√õ                ");
+			printf("\n\t√õ                ");
+			break;
+		default:
+			printf("\n\t√õ√ü√ü√ü√ü√ü√ü√ü√ü√ü√ü ");
+			printf("\n\t√õ         | ");
+			printf("\n\t√õ");
+			printf("\n\t√õ");
+			printf("\n\t√õ");
+			printf("\n\t√õ");
+			printf("\n\t√õ");
+			printf("\n\t√õ");
+			printf("\n\t√õ");
+			printf("\n\t√õ");
+			printf("\n\t√õ");
+			printf("\n\t√õ");
+			break;
+	}
+}
+
+//FUN√á√ÉO ANALIZAR RESULTADOS
 void resultado(char palavra[100],bool result){
 	system("cls");
 	printf("------------------------------------------RESULTADO--------------------------------------------------");
@@ -383,111 +497,7 @@ void resultado(char palavra[100],bool result){
 	voltarMenu();
 }
 
-//FUN«√O DESENHO DO BONECO
-void mostraBoneco(int membros){
-	switch(membros){
-		case 1:
-			printf("\n\t€ﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂ   ");
-			printf("\n\t€         |   ");
-			printf("\n\t€        ***  ");
-			printf("\n\t€       *   * ");
-			printf("\n\t€        ***  ");
-			printf("\n\t€             ");
-			printf("\n\t€             ");
-			printf("\n\t€             ");
-			printf("\n\t€             ");
-			printf("\n\t€             ");
-			printf("\n\t€");
-			printf("\n\t€");
-			break;
-		case 2:
-			printf("\n\t€ﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂ   ");
-			printf("\n\t€         |   ");
-			printf("\n\t€        ***  ");
-			printf("\n\t€       *   * ");
-			printf("\n\t€        ***  ");
-			printf("\n\t€         |   ");
-			printf("\n\t€         |   ");
-			printf("\n\t€         |   ");
-			printf("\n\t€             ");
-			printf("\n\t€             ");
-			printf("\n\t€");
-			printf("\n\t€");
-			break;
-		case 3:
-			printf("\n\t€ﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂ   ");
-			printf("\n\t€         |   ");
-			printf("\n\t€        ***  ");
-			printf("\n\t€       *   * ");
-			printf("\n\t€        ***  ");
-			printf("\n\t€        /|   ");
-			printf("\n\t€       / |   ");
-			printf("\n\t€         |   ");
-			printf("\n\t€             ");
-			printf("\n\t€             ");
-			printf("\n\t€");
-			printf("\n\t€");
-			break;
-		case 4:
-			printf("\n\t€ﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂ  ");
-			printf("\n\t€         |     ");
-			printf("\n\t€        ***    ");
-			printf("\n\t€       *   *   ");
-			printf("\n\t€        ***    ");
-			printf("\n\t€        /|\\  ");
-			printf("\n\t€       / | \\ ");
-			printf("\n\t€         |     ");
-			printf("\n\t€               ");
-			printf("\n\t€               ");
-			printf("\n\t€               ");
-			printf("\n\t€               ");
-			break;
-		case 5:
-			printf("\n\t€ﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂ ");
-			printf("\n\t€         |      ");
-			printf("\n\t€        ***     ");
-			printf("\n\t€       *   *    ");
-			printf("\n\t€        ***     ");
-			printf("\n\t€        /|\\    ");
-			printf("\n\t€       / | \\   ");
-			printf("\n\t€         |      ");
-			printf("\n\t€        /       ");
-			printf("\n\t€       /        ");
-			printf("\n\t€                ");
-			printf("\n\t€                ");
-			break;
-		case 6:
-			printf("\n\t€ﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂ   ");
-			printf("\n\t€         |      ");
-			printf("\n\t€        ***     ");
-			printf("\n\t€       *   *    ");
-			printf("\n\t€        ***     ");
-			printf("\n\t€        /|\\     ");
-			printf("\n\t€       / | \\   ");
-			printf("\n\t€         |      ");
-			printf("\n\t€        / \\     ");
-			printf("\n\t€       /   \\    ");
-			printf("\n\t€                ");
-			printf("\n\t€                ");
-			break;
-		default:
-			printf("\n\t€ﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂ ");
-			printf("\n\t€         | ");
-			printf("\n\t€");
-			printf("\n\t€");
-			printf("\n\t€");
-			printf("\n\t€");
-			printf("\n\t€");
-			printf("\n\t€");
-			printf("\n\t€");
-			printf("\n\t€");
-			printf("\n\t€");
-			printf("\n\t€");
-			break;
-	}
-}
-
-//FUN«√O CREDITOS
+//FUN√á√ÉO CREDITOS
 void creditos(){
 	system("cls");
 	printf("\n\n\n\n\n\n\n\n\n\n");
